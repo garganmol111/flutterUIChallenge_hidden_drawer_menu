@@ -8,14 +8,30 @@ class MenuScreen extends StatefulWidget {
   _MenuScreenState createState() => _MenuScreenState();
 }
 
-class _MenuScreenState extends State<MenuScreen> {
+class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
+  AnimationController titleAnimationController;
+
+  @override
+  void initState() {
+    super.initState();
+    titleAnimationController = new AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   @override
   //This is building the complete menu screen
   Widget build(BuildContext context) {
     //what this widget does is that it finds an ancestor of ZoomScaffoldState, get's the menu controller out of it,
     //then passes itinto the builder function, then whatever the builder function returns is rendered.
     //This allows us to render the menu screen with the MenuController, i.e. the menu items can identify which content screen is active,
-    //and can now function accordingly. This is also used to close the menu screen when any item is tapped, 
+    //and can now function accordingly. This is also used to close the menu screen when any item is tapped,
     //maximizing the content screen loaded.
     return ZoomScaffoldMenuController(
       builder: (BuildContext context, MenuController menuController) {
@@ -32,7 +48,7 @@ class _MenuScreenState extends State<MenuScreen> {
             color: Colors.transparent,
             child: Stack(
               children: <Widget>[
-                createMenuTitle(),
+                createMenuTitle(menuController),
                 createMenuItems(menuController),
               ],
             ),
@@ -44,6 +60,37 @@ class _MenuScreenState extends State<MenuScreen> {
 
   //used to create different items to select in the menu
   createMenuItems(MenuController menuController) {
+    final titles = ['THE PADDOCK', 'THE HERO', 'HELP US GROW', 'SETTINGS'];
+    final selectedIndex = 0;
+
+    final List<Widget> listItems = [];
+    final animationIntervalDuration = 0.5;
+    final perListItemDelay = menuController.state != MenuState.closing ? 0.15 : 0.0;
+    for (var i = 0; i < titles.length; i++) {
+      final animationIntervalStart = i * perListItemDelay;
+      final animationIntervalEnd =
+          animationIntervalStart + animationIntervalDuration;
+
+      listItems.add(
+        AnimatedMenuListItem(
+          menuState: menuController.state,
+          duration: const Duration(milliseconds: 600),
+          curve: Interval(
+            animationIntervalStart,
+            animationIntervalEnd,
+            curve: Curves.easeOut,
+          ),
+          menuListItem: _MenuListItem(
+            title: titles[i],
+            isSelected: i == selectedIndex,
+            onTap: () {
+              menuController.close();
+            },
+          ),
+        ),
+      );
+    }
+
     return Transform(
       transform: Matrix4.translationValues(
         0.0,
@@ -51,36 +98,28 @@ class _MenuScreenState extends State<MenuScreen> {
         0.0,
       ),
       child: Column(
-        children: <Widget>[
-          _MenuListItem(
-            title: 'THE PADDOCK',
-            isSelected: true,
-            onTap:() {menuController.close();},
-          ),
-          _MenuListItem(
-            title: 'THE HERO',
-            isSelected: false,
-            onTap:() {menuController.close();},
-          ),
-          _MenuListItem(
-            title: 'HELP US GROW',
-            isSelected: false,
-            onTap:() {menuController.close();},
-          ),
-          _MenuListItem(
-            title: 'SETTINGS',
-            isSelected: false,
-            onTap:() {menuController.close();},
-          ),
-        ],
+        children: listItems,
       ),
     );
   }
 
   //this function creates the menu title, and applies transform to it.
-  createMenuTitle() {
-    return new Transform(
-      transform: Matrix4.translationValues(-100.0, 0.0, 0.0),
+  createMenuTitle(MenuController menuController) {
+    switch (menuController.state) {
+      case MenuState.open:
+      case MenuState.opening:
+        titleAnimationController.forward();
+        break;
+      case MenuState.closed:
+      case MenuState.closing:
+        titleAnimationController.reverse();
+        break;
+    }
+
+    return AnimatedBuilder(
+      animation: titleAnimationController,
+
+      //this is the text part that doesn't change
       child: OverflowBox(
         maxWidth: double.infinity,
         alignment: Alignment.topLeft,
@@ -97,6 +136,87 @@ class _MenuScreenState extends State<MenuScreen> {
             softWrap: false,
           ),
         ),
+      ),
+
+      //this is the animated part which is animated anytime the animation runs.
+      builder: (BuildContext context, Widget child) {
+        return Transform(
+          transform: Matrix4.translationValues(
+            250.0 * (1.0 - titleAnimationController.value) - 100.0,
+            0.0,
+            0.0,
+          ),
+          child: child,
+        );
+      },
+    );
+  }
+}
+
+//These widgets say "something about me is animate-able".
+class AnimatedMenuListItem extends ImplicitlyAnimatedWidget {
+  final _MenuListItem menuListItem;
+  final MenuState menuState;
+  final Duration duration;
+
+  AnimatedMenuListItem({
+    this.duration,
+    this.menuListItem,
+    this.menuState,
+    curve,
+  }) : super(duration: duration, curve: curve);
+
+  @override
+  _AnimatedMenuListItemState createState() => _AnimatedMenuListItemState();
+}
+
+//This class gives us machinery to automatically calculate the animation values.
+class _AnimatedMenuListItemState
+    extends AnimatedWidgetBaseState<AnimatedMenuListItem> {
+  final double closedSlidePosition = 200.0;
+  final double openSlidePosition = 0.0;
+
+  Tween<double> _translation;
+  Tween<double> _opacity;
+
+  @override
+  void forEachTween(TweenVisitor visitor) {
+    var slide, opacity;
+
+    switch (widget.menuState) {
+      case MenuState.open:
+      case MenuState.opening:
+        slide = openSlidePosition;
+        opacity = 1.0;
+        break;
+      case MenuState.closed:
+      case MenuState.closing:
+        slide = closedSlidePosition;
+        opacity = 0.0;
+        break;
+    }
+
+    _translation = visitor(
+      _translation,
+      slide,
+      (dynamic value) => new Tween<double>(begin: value),
+    );
+
+    _opacity = visitor(
+      _opacity,
+      opacity,
+      (dynamic value) => new Tween<double>(begin: value),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: _opacity.evaluate(animation),
+      child: Transform(
+        transform: Matrix4.translationValues(
+            0.0, _translation.evaluate(animation), 0.0),
+        child: widget.menuListItem,
       ),
     );
   }
