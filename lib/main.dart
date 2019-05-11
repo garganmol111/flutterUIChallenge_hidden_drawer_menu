@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: HomePage(title: 'THE PALEO PADDOCK'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
