@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'zoom_scaffold.dart';
+import 'screen.dart';
 
 final otherScreen = new Screen(
   title: 'OTHER SCREEN',

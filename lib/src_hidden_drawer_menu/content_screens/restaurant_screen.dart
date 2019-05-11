@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'zoom_scaffold.dart';
+import 'screen.dart';
 import 'restaurant_card.dart';
 
 //This contains the values of the home restaurant screen.
