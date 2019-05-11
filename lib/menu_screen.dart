@@ -3,7 +3,16 @@ import 'zoom_scaffold.dart';
 
 //this class is used to return the menu screen, which is at the bottom of the stack and is overlayed with the content screen.
 class MenuScreen extends StatefulWidget {
-  MenuScreen({Key key}) : super(key: key);
+  final Menu menu;
+  final String selectedItemId;
+  final Function(String) onMenuItemSelected;
+
+  MenuScreen({
+    Key key,
+    this.menu,
+    this.onMenuItemSelected,
+    this.selectedItemId,
+  }) : super(key: key);
 
   _MenuScreenState createState() => _MenuScreenState();
 }
@@ -60,13 +69,11 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
   //used to create different items to select in the menu
   createMenuItems(MenuController menuController) {
-    final titles = ['THE PADDOCK', 'THE HERO', 'HELP US GROW', 'SETTINGS'];
-    final selectedIndex = 0;
-
     final List<Widget> listItems = [];
     final animationIntervalDuration = 0.5;
-    final perListItemDelay = menuController.state != MenuState.closing ? 0.15 : 0.0;
-    for (var i = 0; i < titles.length; i++) {
+    final perListItemDelay =
+        menuController.state != MenuState.closing ? 0.15 : 0.0;
+    for (var i = 0; i < widget.menu.items.length; i++) {
       final animationIntervalStart = i * perListItemDelay;
       final animationIntervalEnd =
           animationIntervalStart + animationIntervalDuration;
@@ -81,9 +88,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             curve: Curves.easeOut,
           ),
           menuListItem: _MenuListItem(
-            title: titles[i],
-            isSelected: i == selectedIndex,
+            title: widget.menu.items[i].title,
+            isSelected: widget.menu.items[i].id == widget.selectedItemId,
             onTap: () {
+              widget.onMenuItemSelected(widget.menu.items[i].id);
               menuController.close();
             },
           ),
@@ -257,4 +265,22 @@ class _MenuListItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class Menu {
+  final List<MenuItem> items;
+
+  Menu({
+    this.items,
+  });
+}
+
+class MenuItem {
+  final String id;
+  final String title;
+
+  MenuItem({
+    this.title,
+    this.id,
+  });
 }

@@ -30,13 +30,47 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final menu = Menu(
+    items: [
+      MenuItem(
+        id: 'restaurant',
+        title: 'THE PADDOCK',
+      ),
+      MenuItem(
+        id: 'other1',
+        title: 'THE HERO',
+      ),
+      MenuItem(
+        id: 'other2',
+        title: 'HELP US GROW',
+      ),
+      MenuItem(
+        id: 'other3',
+        title: 'SETTINGS',
+      ),
+    ],
+  );
+
   var activeScreen = restaurantScreen;
+  var selectedMenuItemId = 'restaurant';
 
   @override
   Widget build(BuildContext context) {
     return ZoomScaffold(
+      menuScreen: MenuScreen(
+        menu: menu,
+        selectedItemId: selectedMenuItemId,
+        onMenuItemSelected: (String itemId) {
+          selectedMenuItemId = itemId;
+          if(itemId == 'restaurant') {
+            setState(() => activeScreen = restaurantScreen);
+          } else {
+            setState(() => activeScreen = otherScreen);
+          }
+          
+        },
+      ),
       contentScreen: activeScreen,
-      menuScreen: MenuScreen(),
     );
   }
 }
