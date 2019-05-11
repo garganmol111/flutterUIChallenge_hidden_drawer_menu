@@ -1,16 +1,6 @@
-# hidden_drawer_menu
+# Flutter UI Challenge: Hidden Drawer Menu
 
-A new Flutter project.
+In this flutter UI challenge, I have attempted to recreate the following Hidden Drawer Menu UI created by Stano Bagin at dribble:
+https://dribbble.com/shots/2729372-Paleo-Paddock-ios-application-menu-animation
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+![Screen Capture](https://github.com/garganmol111/flutterUIChallenge_egg_timer/blob/master/capture.gif)
